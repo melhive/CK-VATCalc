@@ -7,7 +7,7 @@ var fs = require('node:fs');
 var path = require('node:path');
 
 var root = path.resolve(__dirname, '..');
-var deploymentBase = 'https://melhive.github.io/CK-VATCalc/';
+var deploymentBase = 'https://melhive.github.io/CrispyKing-VATCalc/';
 var html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 var manifestText = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8');
 var worker = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');

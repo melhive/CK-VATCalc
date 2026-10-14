@@ -49,7 +49,7 @@ All paths are relative, so the app works at `https://USERNAME.github.io/REPOSITO
 
 ## Deploy to GitHub Pages
 
-1. Create a GitHub repository (for example `CK-VATCalc`).
+1. Create a GitHub repository (for example `CrispyKing-VATCalc`).
 2. Upload all files, keeping the folder structure (`icons/` must stay a folder).
 3. Go to **Settings → Pages**.
 4. Under **Build and deployment**, choose **Deploy from a branch**, select your branch (usually `main`) and the `/ (root)` folder, then Save.
