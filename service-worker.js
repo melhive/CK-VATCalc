@@ -10,7 +10,7 @@
  *   "A new version is available." and sends {type:'SKIP_WAITING'} when the user taps Update now.
  * - activate: delete older ckvatcalc-* caches, then clients.claim().
  */
-var VERSION = '1.0.6';
+var VERSION = '1.0.8';
 var CACHE_PREFIX = 'ckvatcalc-';
 var CACHE_NAME = CACHE_PREFIX + VERSION;
 

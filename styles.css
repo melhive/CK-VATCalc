@@ -186,13 +186,12 @@ body {
 .btn-small { min-height: 44px; padding: 0.4rem 1rem; background: var(--ink); border-color: var(--ink); }
 .btn-small:hover { background: #000; border-color: #000; }
 
-/* Invoice-style preview */
+/* Invoice-style preview (plain white background: no ruled lines) */
 .invoice {
   border: 2px solid var(--ink);
   border-radius: 4px;
   padding: 1rem;
   background-color: var(--card);
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 2.1rem, #f6ecdc 2.1rem, #f6ecdc calc(2.1rem + 1px));
   box-shadow: 0 2px 8px rgba(42, 20, 16, 0.08);
   animation: rise 0.4s 0.08s ease-out both;
 }
@@ -342,7 +341,7 @@ body {
 
 /* Print: only the preview, always with the disclaimer */
 @media print {
-  body { background: #fff; }
+  body { background: #fff; display: block; }
   .app-header, .update-banner, .input-panel, .app-footer, .skip-link, .invoice-note, .how { display: none !important; }
   .app-main { display: block; padding: 0; }
   .invoice { border: 2px solid #000; background: #fff; box-shadow: none; animation: none; }

@@ -64,7 +64,7 @@ Service workers and installation require HTTPS (GitHub Pages provides it). `loca
 ## Publish an update
 
 1. Edit your files.
-2. In `service-worker.js`, change `VERSION` (for example `'1.0.6'` to `'1.0.7'`). **This is required**: it is what makes browsers notice a new release.
+2. In `service-worker.js`, change `VERSION` (for example `'1.0.8'` to `'1.0.9'`). **This is required**: it is what makes browsers notice a new release.
 3. Commit and push to GitHub. Pages republishes after a short delay.
 
 ### How installed apps pick it up
