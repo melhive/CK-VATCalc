@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CK-VATCalc</title>
+  <meta name="description" content="An offline-capable Philippine VAT-inclusive amount calculator.">
+  <meta name="theme-color" content="#ef1400">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#amount">Skip to amount input</a>
+
+  <header class="app-header">
+    <img class="brand-logo" src="icons/icon-192.png" width="52" height="52" alt="Crispy King logo">
+    <h1 class="app-title">CK-VATCalc</h1>
+  </header>
+
+  <!-- Update notice: hidden until a new service worker is waiting. -->
+  <div id="update-banner" class="update-banner" role="status" hidden>
+    <span>A new version is available.</span>
+    <button type="button" id="update-btn" class="btn btn-small">Update now</button>
+  </div>
+
+  <main class="app-main">
+    <section class="input-panel" aria-labelledby="input-heading">
+      <h2 id="input-heading" class="visually-hidden">Enter amount</h2>
+
+      <label for="amount" class="field-label">Total Sales (VAT Inclusive)</label>
+      <div class="input-wrap">
+        <span class="currency" aria-hidden="true">₱</span>
+        <input
+          id="amount"
+          name="amount"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          maxlength="20"
+          placeholder="0.00"
+          aria-describedby="amount-hint amount-message">
+      </div>
+      <p id="amount-hint" class="hint">Assumes the entire amount is subject to standard 12% VAT.</p>
+
+      <!-- Validation / status messages. aria-live so screen readers announce changes. -->
+      <p id="amount-message" class="message" role="status" aria-live="polite"></p>
+
+      <div class="actions">
+        <button type="button" id="reset-btn" class="btn">Reset</button>
+        <button type="button" id="print-btn" class="btn btn-secondary">Print preview</button>
+      </div>
+    </section>
+
+    <section class="invoice" id="invoice" aria-labelledby="invoice-heading">
+      <h2 id="invoice-heading" class="invoice-title">VAT SALES CALCULATION PREVIEW</h2>
+      <p class="disclaimer">CALCULATION PREVIEW — NOT AN OFFICIAL BIR INVOICE</p>
+
+      <div class="invoice-grid">
+        <dl class="invoice-col" aria-label="Sales summary">
+          <div class="row row-live" id="row-gross">
+            <dt>TOTAL SALES (VAT INCLUSIVE)</dt>
+            <dd id="out-gross" data-live>—</dd>
+          </div>
+          <div class="row row-live" id="row-vat">
+            <dt>LESS: 12% VAT</dt>
+            <dd id="out-vat" data-live>—</dd>
+          </div>
+          <div class="row row-live row-total" id="row-net">
+            <dt>NET OF VAT/TOTAL</dt>
+            <dd id="out-net" data-live>—</dd>
+          </div>
+          <div class="row">
+            <dt>LESS: SC/PWD DISC.</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+          <div class="row">
+            <dt>TOTAL DUE</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+          <div class="row">
+            <dt>LESS: WITHHOLDING TAX</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+          <div class="row row-live row-total" id="row-total-due">
+            <dt>TOTAL AMOUNT DUE</dt>
+            <dd id="out-total-due" data-live>—</dd>
+          </div>
+        </dl>
+
+        <dl class="invoice-col invoice-col-side" aria-label="Sales classification (not calculated)">
+          <div class="row">
+            <dt>VATABLE SALES (V)</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+          <div class="row">
+            <dt>VAT EXEMPT SALES (E)</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+          <div class="row">
+            <dt>ZERO-RATED SALES (Z)</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+          <div class="row">
+            <dt>VAT AMOUNT (12%)</dt>
+            <dd class="na" aria-label="Not calculated">—</dd>
+          </div>
+        </dl>
+      </div>
+
+      <p class="invoice-note">Dashes (—) mark fields this app does not calculate. TOTAL AMOUNT DUE equals the amount you entered.</p>
+      <p class="print-only print-disclaimer">This is a calculation preview only. It is not an official BIR invoice or receipt and has no legal validity as one.</p>
+    </section>
+
+    <section class="how" aria-labelledby="how-heading">
+      <details id="how-details">
+        <summary id="how-heading">How it works</summary>
+        <div class="how-body">
+          <p>VAT is a small extra charge added to a price. In the Philippines it is <strong>12%</strong>.</p>
+          <p>When the price you see <em>already has VAT inside</em>, it is called VAT-inclusive. This app finds the VAT part and the price without VAT.</p>
+
+          <h3>Two easy steps</h3>
+          <ol class="steps">
+            <li><strong>Net of VAT</strong> (price without VAT): total &divide; 1.12</li>
+            <li><strong>Less 12% VAT</strong>: net of VAT &times; 12% (0.12)</li>
+          </ol>
+          <p>Why 1.12? The price without VAT is 1 whole. VAT adds 0.12 more. So the total you pay is 1.12.</p>
+
+          <h3>Example: &#8369;350</h3>
+          <dl class="example">
+            <div><dt>Step 1</dt><dd>350 &divide; 1.12 = 312.50<br><strong>Net of VAT</strong></dd></div>
+            <div><dt>Step 2</dt><dd>312.50 &times; 0.12 = 37.50<br><strong>Less 12% VAT</strong></dd></div>
+            <div><dt>Check</dt><dd>312.50 + 37.50 = 350.00<br>It adds back to the total.</dd></div>
+          </dl>
+
+          <p id="how-live" class="how-live">Type an amount above to see your own answer here.</p>
+
+          <h3>Tiny pieces of a centavo</h3>
+          <p>If the answer has tiny leftover pieces, the app rounds to the nearest centavo.</p>
+
+          <h3>What this app does not do</h3>
+          <p>It only does the VAT math. It does not know if your item really has VAT. It also does not work out discounts or withholding tax. If you are not sure, ask your leader.</p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <p class="footer-note">Calculation only. This app does not decide whether a sale is VATable, exempt, or zero-rated. Amounts stay on your device and are never sent anywhere.</p>
+      <hr class="footer-rule">
+      <img class="footer-logo" src="icons/icon-192.png" width="40" height="40" alt="">
+      <p class="copyright">&copy; 2026 Crispy King Bayugan. All rights reserved.</p>
+      <p class="credit">Created by: MelHive</p>
+      <p class="version" id="version" hidden></p>
+    </div>
+  </footer>
+
+  <script src="vat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
