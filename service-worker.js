@@ -10,13 +10,14 @@
  *   "A new version is available." and sends {type:'SKIP_WAITING'} when the user taps Update now.
  * - activate: delete older ckvatcalc-* caches, then clients.claim().
  */
-var VERSION = '1.0.9';
+var VERSION = '1.0.10';
 var CACHE_PREFIX = 'ckvatcalc-';
 var CACHE_NAME = CACHE_PREFIX + VERSION;
 var APP_SCOPE = self.registration.scope;
 var INDEX_URL = new URL('index.html', APP_SCOPE).href;
+var ROOT_URL = new URL('./', APP_SCOPE).href;
 
-// Relative to the worker's own location, so it works under /RepoName/ on GitHub Pages.
+// Resolve these paths against APP_SCOPE so project sites stay under /RepoName/.
 var SHELL_FILES = [
   './',
   'index.html',
@@ -78,10 +79,21 @@ self.addEventListener('fetch', function (event) {
   if (url.origin !== self.location.origin) return;
 
   if (req.mode === 'navigate') {
-    // Keep the app entry point anchored to the registered scope (including /RepoName/).
+    // Try both cached forms of the scoped app entry point before using the network.
     event.respondWith(
       caches.open(CACHE_NAME).then(function (cache) {
-        return cache.match(INDEX_URL).then(function (hit) { return hit || fetch(req); });
+        return cache.match(INDEX_URL).then(function (indexHit) {
+          if (indexHit && indexHit.ok && /text\/html/i.test(indexHit.headers.get('content-type') || '')) {
+            return indexHit;
+          }
+          return cache.match(ROOT_URL).then(function (rootHit) {
+            if (rootHit && rootHit.ok && /text\/html/i.test(rootHit.headers.get('content-type') || '')) {
+              return rootHit;
+            }
+            // Preserve the network response (including 404s) when no cached document exists.
+            return fetch(req);
+          });
+        });
       })
     );
     return;

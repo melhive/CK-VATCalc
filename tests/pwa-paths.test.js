@@ -55,8 +55,23 @@ shellResources.forEach(function (ref) {
   assertLocalFile(ref, 'service-worker.js shell');
 });
 assert.match(worker, /new URL\('index\.html', APP_SCOPE\)/, 'navigation fallback must resolve under worker scope');
+assert.match(worker, /new URL\('\.\/', APP_SCOPE\)/, 'scoped-root fallback must resolve under worker scope');
 assert.match(worker, /new URL\(url, APP_SCOPE\)/, 'shell cache URLs must resolve under worker scope');
+assert.match(worker, /fetch\(new Request\(resourceURL, \{ cache: 'reload' \}\)\)/, 'shell fetch must use the resolved absolute URL');
+assert.match(worker, /cache\.put\(resourceURL, res\)/, 'cache key must match the fetched absolute URL');
+assert.match(worker, /cache\.match\(INDEX_URL\)/, 'navigation fallback must check the canonical index URL');
+assert.match(worker, /cache\.match\(ROOT_URL\)/, 'navigation fallback must check the scoped root URL');
+assert.match(worker, /return fetch\(req\);/, 'navigation miss must retain the network status and response');
+assert.match(worker, /caches\.delete\(CACHE_NAME\)/, 'failed install must remove its incomplete version cache');
+assert.match(worker, /var VERSION = '1\.0\.10'/, 'worker behavior change must use a new cache version');
+assert.match(worker, /data\.type === 'SKIP_WAITING'[\s\S]*self\.skipWaiting\(\)/, 'user-controlled update activation must remain');
 assert.match(app, /register\('service-worker\.js'/, 'worker registration should stay relative to the deployed document');
+
+var workerScope = new URL('service-worker.js', deploymentBase);
+var registeredScope = new URL('.', workerScope);
+assert.equal(registeredScope.href, deploymentBase, 'worker registration scope must cover the project start URL');
+assert.equal(new URL('index.html', registeredScope).href, deploymentBase + 'index.html');
+assert.equal(new URL('./', registeredScope).href, deploymentBase);
 
 manifest.icons.forEach(function (icon) {
   var iconURL = assertLocalFile(icon.src, 'manifest icon');
